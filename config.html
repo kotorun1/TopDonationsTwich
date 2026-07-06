@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>TOP DONATORS // CONFIG</title>
+<script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+  :root{
+    --phosphor:#5CFF7A;
+    --phosphor-dim:#2C8F45;
+    --amber-warn:#FFB000;
+    --crt-black:#040803;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html, body{
+    margin:0;
+    padding:20px 0;
+    width:100%;
+    min-height:100vh;
+    background:#000;
+    font-family:'Share Tech Mono','VT323',monospace;
+  }
+
+  /* ======== ГЛАВНОЕ: вертикальное расположение блоков ======== */
+  body{
+    display:flex;
+    flex-direction:column;       /* блоки идут сверху вниз */
+    align-items:center;
+    justify-content:flex-start;  /* прижимаем к верху */
+    overflow:auto;              /* скролл, если контент не влезает */
+  }
+
+  .crt-frame{
+    position:relative;
+    width:720px;
+    max-width:94vw;
+    border-radius:14px;
+    padding:6px;
+    background:
+      linear-gradient(180deg,#3a3f42,#111213 60%,#050505);
+    box-shadow:
+      0 0 0 2px #000,
+      0 20px 50px rgba(0,0,0,.7),
+      inset 0 0 12px rgba(0,0,0,.8);
+    margin-bottom:24px;         /* отступ между блоками */
+  }
+
+  /* ===== ВСТАВЬ СВОЙ ФОН ВНИЗУ ===== */
+  .screen{
+    position:relative;
+    border-radius:8px;
+    overflow:hidden;
+    background: #0a0f0a; /* временный фон — замени на свою data:image */
+    /* ВСТАВЬ СЮДА background-image: url('data:image/...'); */
+    background-size:cover;
+    background-position:center;
+    box-shadow: inset 0 0 60px 20px rgba(0,0,0,.85);
+  }
+
+  /* darken + tint the photographed CRT background so green text pops */
+  .screen::before{
+    content:"";
+    position:absolute; inset:0;
+    background:rgba(3,10,4,.72);
+    mix-blend-mode:multiply;
+    z-index:1;
+  }
+
+  /* subtle scanline shimmer overlay, on top of everything */
+  .screen::after{
+    content:"";
+    position:absolute; inset:0;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,.18) 0px,
+      rgba(0,0,0,.18) 1px,
+      transparent 2px,
+      transparent 3px
+    );
+    z-index:5;
+    animation: flicker 5.5s infinite;
+  }
+
+  .crt-curve{
+    position:absolute; inset:0;
+    z-index:6;
+    pointer-events:none;
+    box-shadow:
+      inset 0 0 90px 20px rgba(0,0,0,.55),
+      inset 0 0 4px 2px rgba(92,255,122,.15);
+    border-radius:8px;
+  }
+
+  @keyframes flicker{
+    0%,100%{ opacity:1; }
+    92%{ opacity:1; }
+    93%{ opacity:.85; }
+    94%{ opacity:1; }
+    96%{ opacity:.9; }
+    97%{ opacity:1; }
+  }
+
+  .content{
+    position:relative;
+    z-index:3;
+    color:var(--phosphor);
+    padding:26px 30px 22px;
+    text-shadow:
+      0 0 2px var(--phosphor),
+      0 0 8px rgba(92,255,122,.6),
+      0 0 16px rgba(92,255,122,.25);
+    letter-spacing:.5px;
+  }
+
+  .boot-line{
+    font-size:13px;
+    color:var(--phosphor-dim);
+    opacity:.85;
+    margin:0 0 4px;
+  }
+
+  .divider{
+    border:none;
+    border-top:1px dashed var(--phosphor-dim);
+    opacity:.6;
+    margin:10px 0 14px;
+  }
+
+  .title-row{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:2px;
+  }
+
+  h1{
+    font-family:'VT323',monospace;
+    font-size:38px;
+    margin:0;
+    letter-spacing:2px;
+    text-transform:uppercase;
+  }
+
+  .sys-clock{
+    font-size:14px;
+    color:var(--amber-warn);
+    text-shadow:0 0 6px rgba(255,176,0,.6);
+  }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    font-size:19px;
+  }
+
+  thead th{
+    text-align:left;
+    font-weight:normal;
+    color:var(--phosphor-dim);
+    border-bottom:1px solid var(--phosphor-dim);
+    padding:4px 6px 8px;
+    text-transform:uppercase;
+    font-size:14px;
+    letter-spacing:1px;
+  }
+
+  tbody td{
+    padding:5px 6px;
+    white-space:nowrap;
+  }
+
+  tbody tr td:first-child{
+    width:44px;
+    color:var(--amber-warn);
+  }
+
+  tbody tr td:nth-child(2){
+    width:auto;
+  }
+
+  tbody tr td:last-child{
+    text-align:right;
+    font-weight:bold;
+  }
+
+  tbody tr:nth-child(1){ font-size:22px; }
+  tbody tr:nth-child(1) td:last-child{ color:var(--amber-warn); }
+
+  .footer-line{
+    margin-top:16px;
+    font-size:14px;
+    color:var(--phosphor-dim);
+    display:flex;
+    justify-content:space-between;
+  }
+
+  .cursor{
+    display:inline-block;
+    width:9px; height:16px;
+    background:var(--phosphor);
+    margin-left:4px;
+    vertical-align:-3px;
+    animation:blink 1s steps(1) infinite;
+    box-shadow:0 0 6px rgba(92,255,122,.8);
+  }
+
+  @keyframes blink{
+    0%,49%{ opacity:1; }
+    50%,100%{ opacity:0; }
+  }
+
+  @media (max-width:520px){
+    h1{ font-size:28px; }
+    table{ font-size:15px; }
+    .content{ padding:18px 16px; }
+  }
+
+  /* ————— АДМИН-ПАНЕЛЬ (вертикально под CRT) ————— */
+  .admin-panel{
+    width:720px;
+    max-width:94vw;
+    margin:0 auto 40px;
+    font-family:'Share Tech Mono','VT323',monospace;
+    color:var(--phosphor);
+  }
+
+  .admin-panel h2{
+    font-family:'VT323',monospace;
+    font-size:22px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--amber-warn);
+    text-shadow:0 0 6px rgba(255,176,0,.5);
+    margin:0 0 10px;
+  }
+
+  .admin-box{
+    background:#050a05;
+    border:1px solid var(--phosphor-dim);
+    border-radius:8px;
+    padding:16px 18px;
+    box-shadow:inset 0 0 20px rgba(0,0,0,.6), 0 0 12px rgba(92,255,122,.08);
+  }
+
+  .form-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:12px;
+  }
+
+  .form-row input, .form-row select{
+    background:#000;
+    border:1px solid var(--phosphor-dim);
+    color:var(--phosphor);
+    font-family:'Share Tech Mono',monospace;
+    font-size:15px;
+    padding:8px 10px;
+    border-radius:4px;
+    outline:none;
+  }
+
+  .form-row input:focus, .form-row select:focus{
+    border-color:var(--phosphor);
+    box-shadow:0 0 6px rgba(92,255,122,.4);
+  }
+
+  #nameInput{ flex:2 1 180px; }
+  #amountInput{ flex:1 1 100px; }
+  #currencySelect{ flex:0 0 70px; }
+
+  button{
+    font-family:'Share Tech Mono',monospace;
+    font-size:14px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    background:#000;
+    color:var(--phosphor);
+    border:1px solid var(--phosphor);
+    border-radius:4px;
+    padding:8px 14px;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+
+  button:hover{ background:var(--phosphor); color:#000; }
+
+  button.danger{ border-color:#ff5c5c; color:#ff5c5c; }
+  button.danger:hover{ background:#ff5c5c; color:#000; }
+
+  button.secondary{ border-color:var(--phosphor-dim); color:var(--phosphor-dim); }
+  button.secondary:hover{ background:var(--phosphor-dim); color:#000; }
+
+  .admin-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:15px;
+    margin-top:6px;
+  }
+
+  .admin-table th{
+    text-align:left;
+    color:var(--phosphor-dim);
+    border-bottom:1px solid var(--phosphor-dim);
+    padding:4px 6px 8px;
+    font-size:13px;
+    text-transform:uppercase;
+  }
+
+  .admin-table td{
+    padding:6px;
+    border-bottom:1px dashed rgba(92,255,122,.15);
+    vertical-align:middle;
+  }
+
+  .admin-table td.actions{
+    text-align:right;
+    white-space:nowrap;
+  }
+
+  .admin-table td.actions button{
+    padding:4px 8px;
+    font-size:12px;
+    margin-left:6px;
+  }
+
+  .status-line{
+    margin-top:12px;
+    font-size:13px;
+    min-height:18px;
+    color:var(--phosphor-dim);
+  }
+
+  .status-line.ok{ color:var(--phosphor); }
+  .status-line.err{ color:#ff5c5c; }
+
+  .hint{
+    font-size:12px;
+    color:var(--phosphor-dim);
+    margin-top:4px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="crt-frame">
+    <div class="screen">
+      <div class="crt-curve"></div>
+      <div class="content" id="content">
+        <div class="boot-line" id="bootLine">&gt; INIT DONOR_TERMINAL.EXE ...OK</div>
+        <div class="title-row">
+          <h1>TOP DONATORS</h1>
+          <div class="sys-clock" id="clock">--:--:--</div>
+        </div>
+        <hr class="divider">
+        <table>
+          <thead><tr><th>#</th><th>USER</th><th>AMOUNT</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="footer-line">
+          <span>SYSTEM: STREAM_SUPPORT_v1.0</span>
+          <span>UPDATED <span id="updDate"></span><span class="cursor"></span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-panel">
+    <h2>&gt; DONOR_TERMINAL CONFIG</h2>
+    <div class="admin-box">
+      <div class="form-row">
+        <input type="text" id="nameInput" placeholder="viewer name" maxlength="40">
+        <input type="number" id="amountInput" placeholder="amount" min="0" step="1">
+        <select id="currencySelect">
+          <option value="&#8381;">&#8381;</option>
+          <option value="$">$</option>
+          <option value="&#8364;">&#8364;</option>
+        </select>
+        <button id="submitBtn" type="button">ADD</button>
+        <button id="cancelEditBtn" type="button" class="secondary" style="display:none;">CANCEL</button>
+      </div>
+
+      <table class="admin-table">
+        <thead><tr><th>#</th><th>Name</th><th>Amount</th><th></th></tr></thead>
+        <tbody id="adminTbody"></tbody>
+      </table>
+
+      <div class="status-line" id="statusLine">&gt; ready.</div>
+      <div class="hint">Sorted automatically by amount. The viewer panel shows the top 10 only. Changes save automatically to this channel's extension configuration.</div>
+    </div>
+  </div>
+
+
+<script src="config.js"></script>
+
+
+</body>
+</html>
