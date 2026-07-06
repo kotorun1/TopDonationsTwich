@@ -63,38 +63,40 @@
   }
 
   function saveToConfig(){
-    if (!authorized || !window.Twitch || !Twitch.ext){
-      setStatus('not running inside Twitch — changes are local only.', 'err');
-      return;
-    }
-    const payload = JSON.stringify({
-      donators: DONATORS,
-      updatedOn: new Date().toLocaleDateString('ru-RU')
-    });
-    try{
-      Twitch.ext.configuration.set(SEGMENT, VERSION, payload);
-      setStatus('saved.', 'ok');
-    } catch(e){
-      console.error(e);
-      setStatus('save failed: ' + e.message, 'err');
-    }
+  if (!authorized || !window.Twitch || !Twitch.ext){
+    setStatus('not running inside Twitch — changes are local only.', 'err');
+    return;
   }
+  const payload = JSON.stringify({
+    donators: DONATORS,
+    updatedOn: new Date().toLocaleDateString('ru-RU')
+  });
+  try{
+    Twitch.ext.configuration.set(SEGMENT, VERSION, payload);
+    setStatus('saved.', 'ok');
+  } catch(e){
+    console.error(e);
+    setStatus('save failed: ' + e.message, 'err');
+  }
+}
 
   function loadFromConfig(){
-    try{
-      const seg = Twitch.ext.configuration.broadcaster;
-      if (seg && seg.content){
-        const parsed = JSON.parse(seg.content);
-        DONATORS = Array.isArray(parsed.donators) ? parsed.donators : [];
-        DONATORS.forEach(d => { if (typeof d.id !== 'number'){ d.id = nextId++; } });
-        nextId = DONATORS.reduce((m,d)=> Math.max(m, d.id+1), 1);
-      }
-    } catch(e){
-      console.error('Failed to parse configuration content', e);
+  try{
+    const seg = Twitch.ext.configuration.broadcaster;
+    if (seg && seg.content){
+      const parsed = JSON.parse(seg.content);
+      DONATORS = Array.isArray(parsed.donators) ? parsed.donators : [];
+      DONATORS.forEach(d => { if (typeof d.id !== 'number'){ d.id = nextId++; } });
+      nextId = DONATORS.reduce((m,d)=> Math.max(m, d.id+1), 1);
+    } else {
       DONATORS = [];
     }
-    render();
+  } catch(e){
+    console.error('Failed to parse configuration content', e);
+    DONATORS = [];
   }
+  render();
+}
 
   function resetForm(){
     document.getElementById('nameInput').value = '';
@@ -148,14 +150,15 @@
       editingId = id;
       setStatus('editing "' + d.name + '" — change values and press UPDATE.');
     } else if (target.classList.contains('delete-btn')){
-      const d = DONATORS.find(x => x.id === id);
-      if (!d) return;
-      if (!confirm('Delete "' + d.name + '"?')) return;
-      DONATORS = DONATORS.filter(x => x.id !== id);
-      if (editingId === id) resetForm();
-      render();
-      saveToConfig();
-    }
+  const d = DONATORS.find(x => x.id === id);
+  if (!d) return;
+  // Удаляем без подтверждения
+  DONATORS = DONATORS.filter(x => x.id !== id);
+  if (editingId === id) resetForm();
+  render();
+  saveToConfig();
+  setStatus('deleted "' + d.name + '".', 'ok');
+}
   });
 
   // ---- привязка остальных обработчиков через addEventListener ----
@@ -169,9 +172,9 @@
 
   if (window.Twitch && Twitch.ext){
     Twitch.ext.onAuthorized(function(auth){
-      authorized = true;
-      loadFromConfig();
-      setStatus('loaded. ready.');
+    authorized = true;
+    loadFromConfig();
+    setStatus('loaded. ready.');
     });
   } else {
     document.getElementById('bootLine').textContent = '> STANDALONE MODE (NOT RUNNING INSIDE TWITCH)';
